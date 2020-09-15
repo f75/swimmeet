@@ -1,0 +1,41 @@
+let
+    Source = Csv.Document(File.Contents("C:\Users\Somar Bhangay\Downloads\meet-results-2019-ca-scs-wag-at-gwsc-13dec2019-001\Meet Results-2019 CA SCS WAG at GWSC-13Dec2019-001.cl2"),null,{0,3, 11, 39, 55, 63, 65, 66, 67, 71, 73, 76, 80, 88, 97, 107, 124, 126, 128, 130, 132, 135, 138, 142}),
+    #"Change Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}, {"Column9", type text}, {"Column10", type text}, {"Column11", type text}, {"Column12", type text}, {"Column13", type text}, {"Column14", type text}, {"Column15", type text}, {"Column16", type text}, {"Column17", type text}, {"Column18", type text}, {"Column19", type text}, {"Column20", type text}, {"Column21", type text}, {"Column22", type text}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Change Type",{{"Column2", "Local Swim Committee"}, {"Column3", "Swimmer Name"}, {"Column4", "USSNUM"}, {"Column5", "DOB"}, {"Column6", "Age at Event"}, {"Column7", "Sex Code"}, {"Column8", "Event Code"}, {"Column9", "Event Dist"}, {"Column10", "Event Stroke"}, {"Column11", "Event Number"}, {"Column12", "Event Age Group"}, {"Column13", "Event Date"}, {"Column14", "Entry Time"}, {"Column15", "Preliminary Result Time"}, {"Column16", "Final Result Time"}, {"Column17", "Prelim Heat"}, {"Column18", "Prelim Lane"}, {"Column19", "Final Heat"}, {"Column20", "Final Lane"}, {"Column21", "Finished place in Preliminary"}, {"Column22", "Finished place in final"}, {"Column23", "Poiint"}, {"Column1", "Record Code"}}),
+    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns", each ([Record Code] = "D01")),
+    #"Duplicated Column" = Table.DuplicateColumn(#"Filtered Rows", "Entry Time", "Entry Time - Copy"),
+    #"Added Custom" = Table.AddColumn(#"Duplicated Column", "Custom", each Text.Trim(Text.Start([Entry Time],Text.Length([Entry Time])-1))),
+    #"Added Custom1" = Table.AddColumn(#"Added Custom", "Custom.1", each if Text.PositionOf([Custom],":")=-1 then [Custom] else Text.End([Custom],5)),
+    #"Changed Type" = Table.TransformColumnTypes(#"Added Custom1",{{"Custom.1", type number}}),
+    #"Added Custom2" = Table.AddColumn(#"Changed Type", "Custom.2", each if Text.PositionOf([Custom],":")=-1 then 0 else Text.Start([Custom],Text.PositionOf([Custom],":"))),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Added Custom2",{{"Custom.2", Int64.Type}}),
+    #"Added Custom3" = Table.AddColumn(#"Changed Type1", "Entry Time Seconds", each [Custom.2]*60+[Custom.1]),
+    #"Removed Columns" = Table.RemoveColumns(#"Added Custom3",{"Entry Time - Copy", "Custom", "Custom.1", "Custom.2"}),
+    #"Duplicated Column1" = Table.DuplicateColumn(#"Removed Columns", "Preliminary Result Time", "Preliminary Result Time - Copy"),
+    #"Added Custom4" = Table.AddColumn(#"Duplicated Column1", "Custom", each Text.Trim(Text.Start([#"Preliminary Result Time - Copy"],Text.Length([#"Preliminary Result Time - Copy"])-2))),
+    #"Added Custom5" = Table.AddColumn(#"Added Custom4", "Custom.1", each if Text.PositionOf([Custom],":")=-1 then [Custom] else Text.End([Custom],5)),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Added Custom5",{{"Custom.1", type number}}),
+    #"Added Custom6" = Table.AddColumn(#"Changed Type2", "Custom.2", each if Text.PositionOf([Custom],":")=-1 then 0 else Text.Start([Custom],Text.PositionOf([Custom],":"))),
+    #"Changed Type3" = Table.TransformColumnTypes(#"Added Custom6",{{"Custom.2", Int64.Type}}),
+    #"Added Custom7" = Table.AddColumn(#"Changed Type3", "Prelim Result Time Sec", each [Custom.2]*60+[Custom.1]),
+    #"Removed Columns1" = Table.RemoveColumns(#"Added Custom7",{"Preliminary Result Time - Copy", "Custom", "Custom.1", "Custom.2"}),
+    #"Renamed Columns1" = Table.RenameColumns(#"Removed Columns1",{{"Prelim Result Time Sec", "Prelim Result Time Seconds"}}),
+    #"Duplicated Column2" = Table.DuplicateColumn(#"Renamed Columns1", "Final Result Time", "Final Result Time - Copy"),
+    #"Added Custom8" = Table.AddColumn(#"Duplicated Column2", "Custom", each Text.Trim(Text.Start([#"Final Result Time - Copy"],Text.Length([#"Final Result Time - Copy"])-1))),
+    #"Added Custom9" = Table.AddColumn(#"Added Custom8", "Custom.1", each if Text.PositionOf([Custom],":")=-1 then [Custom] else Text.End([Custom],5)),
+    #"Changed Type4" = Table.TransformColumnTypes(#"Added Custom9",{{"Custom.1", type number}}),
+    #"Added Custom10" = Table.AddColumn(#"Changed Type4", "Custom.2", each if Text.PositionOf([Custom],":")=-1 then 0 else Text.Start([Custom],Text.PositionOf([Custom],":"))),
+    #"Changed Type5" = Table.TransformColumnTypes(#"Added Custom10",{{"Custom.2", Int64.Type}}),
+    #"Added Custom11" = Table.AddColumn(#"Changed Type5", "Custom.3", each [Custom.2]*60+[Custom.1]),
+    #"Removed Columns2" = Table.RemoveColumns(#"Added Custom11",{"Final Result Time - Copy", "Custom", "Custom.1", "Custom.2"}),
+    #"Renamed Columns2" = Table.RenameColumns(#"Removed Columns2",{{"Custom.3", "Final Result Time Seconds"}})
+in
+    #"Renamed Columns2"
+
+Finished place in final
+
+-------------------------
+if Text.Start([DOB])<8 then 
+    Text.Combine("0",Text.Start([DOB],1),"/",Text.End(Text.Start([DOB],3),2),"/",Text.End([DOB],4))
+    else
+    Text.Combine(Text.Start([DOB],2),"/",Text.End(Text.Start([DOB],3),2),"/",Text.End([DOB],4))
